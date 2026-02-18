@@ -17,7 +17,8 @@ Hybrid time-locked file encryption system built in Python using AES-256-GCM, PBK
 
 🖥 Modern GUI built with CustomTkinter
 
-🔒 Resistant to system clock manipulation
+🔒 Resistant to system clock manipulation attacks
+
 
 🧠 System Architecture
 🔹 Encryption Phase
@@ -35,6 +36,7 @@ File is encrypted using AES-256-GCM.
 Metadata (salt, nonce, unlock time, RSW puzzle) is stored separately.
 
 A small calibrated RSW puzzle is generated for additional cryptographic delay.
+
 
 🔹 Decryption Phase
 
@@ -59,19 +61,21 @@ File is decrypted
 
 SHA-256 integrity is verified.
 
+
 🔐 Security Design
 
 This hybrid model protects against:
 
 ❌ System clock manipulation
 
-❌ Immediate decryption after unlock
+❌ Immediate decryption upon unlock
 
-❌ Password brute-force without delay
+❌ Unauthorized access without password
 
 ❌ File integrity tampering
 
 The system balances usability and cryptographic enforcement by combining real-world time validation with computational delay.
+
 
 🛠 Technologies Used
 
@@ -89,11 +93,24 @@ tzdata
 
 zoneinfo
 
+
 📦 Installation
+
+Clone the repository:
+
 git clone https://github.com/yourusername/yourrepo.git
 cd yourrepo
+
+
+Install dependencies:
+
 pip install -r requirements.txt
+
+
+Run the application:
+
 python main.py
+
 
 ⚠ Requirements
 
@@ -101,26 +118,28 @@ Internet connection required for trusted time verification.
 
 Windows users must install tzdata (included in requirements.txt).
 
+
 🎓 Academic Context
 
 This project was developed for an intermediate-level cryptography module to demonstrate:
 
 Symmetric encryption (AES-256)
 
-Authenticated encryption (GCM)
+Authenticated encryption (GCM mode)
 
-Key derivation functions (PBKDF2)
+Key derivation functions (PBKDF2-HMAC-SHA256)
 
-Time-lock cryptographic concepts (RSW)
+Time-lock cryptographic concepts (RSW algorithm)
 
 Secure time validation models
 
 Hybrid cryptographic system design
 
+
 📌 Limitations
 
-RSW delay is CPU-dependent.
+RSW delay duration depends on CPU performance.
 
-Unlock time precision depends on trusted API availability.
+Unlock precision depends on trusted time API availability.
 
-Not intended for enterprise production use.
+Designed for academic and educational purposes.
