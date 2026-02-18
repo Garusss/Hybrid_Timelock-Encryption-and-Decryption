@@ -1,0 +1,6 @@
+cryptography
+customtkinter
+sympy
+requests
+python-dateutil
+tzdata
