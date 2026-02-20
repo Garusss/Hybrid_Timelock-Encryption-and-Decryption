@@ -12,6 +12,7 @@ from time_verifier import get_trusted_time
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
+
 class App(ctk.CTk):
 
     def __init__(self):
@@ -41,6 +42,9 @@ class App(ctk.CTk):
         ctk.CTkButton(self, text="Encrypt", command=self.encrypt).pack(pady=10)
         ctk.CTkButton(self, text="Decrypt", command=self.decrypt).pack(pady=10)
 
+    # =========================
+    # ENCRYPT FUNCTION
+    # =========================
     def encrypt(self):
         file_path = filedialog.askopenfilename()
         if not file_path:
@@ -66,12 +70,14 @@ class App(ctk.CTk):
         # Convert to UTC
         unlock_time = nepal_time.astimezone(timezone.utc)
 
+        # Generate salt & derive key
         salt = os.urandom(16)
         key = derive_key(password, salt)
 
         output_file = file_path + ".enc"
         nonce = encrypt_file(file_path, output_file, key)
 
+        # Create RSW puzzle using derived key
         puzzle = create_small_delay_puzzle(key, delay_seconds=5)
 
         metadata = {
@@ -87,6 +93,9 @@ class App(ctk.CTk):
 
         messagebox.showinfo("Success", "File encrypted successfully!")
 
+    # =========================
+    # DECRYPT FUNCTION
+    # =========================
     def decrypt(self):
         file_path = filedialog.askopenfilename()
         if not file_path:
@@ -109,6 +118,7 @@ class App(ctk.CTk):
         with open(meta_path, "r") as f:
             metadata = json.load(f)
 
+        # ================= TIME VALIDATION =================
         server_time = get_trusted_time()
         if server_time is None:
             messagebox.showerror("Error", "Cannot verify trusted time!")
@@ -123,25 +133,37 @@ class App(ctk.CTk):
             )
             return
 
+        # ================= SOLVE RSW PUZZLE =================
         def update_progress(value):
             self.progress.set(value)
             self.update_idletasks()
 
         recovered_key = solve_puzzle(metadata["puzzle"], update_progress)
 
+        # ================= PASSWORD VALIDATION FIX =================
+        salt = bytes.fromhex(metadata["salt"])
+        derived_key = derive_key(password, salt)
+
+        if derived_key != recovered_key:
+            messagebox.showerror("Error", "Incorrect password!")
+            return
+
+        # ================= FILE DECRYPTION =================
         nonce = bytes.fromhex(metadata["nonce"])
         output_file = file_path.replace(".enc", ".decrypted")
 
         try:
             decrypt_file(file_path, output_file, recovered_key, nonce)
         except:
-            messagebox.showerror("Error", "Wrong password or corrupted file!")
+            messagebox.showerror("Error", "Decryption failed!")
             return
 
+        # ================= INTEGRITY CHECK =================
         if sha256_hash(output_file) == metadata["file_hash"]:
             messagebox.showinfo("Success", "Decryption successful!")
         else:
             messagebox.showerror("Error", "Integrity check failed!")
+
 
 if __name__ == "__main__":
     app = App()
